@@ -1,1 +1,70 @@
+#!/usr/bin/env python3
+import sys
+import os
+import urllib.request
 
+VERSION_FILE = os.path.expanduser("~/.local/lib/max/version.txt")
+
+def print_version():
+    try:
+        with open(VERSION_FILE) as f:
+            lines = f.read().splitlines()
+            print("Max version:", lines[0] if lines else "unknown")
+            if len(lines) > 1:
+                print("Build date:", lines[1])
+            if len(lines) > 2:
+                print("Commit:", lines[2])
+    except FileNotFoundError:
+        print("Version file not found.")
+
+def update():
+    print("Checking for updates...")
+    url = "https://raw.githubusercontent.com/server-luks/maxis/main/max_source/version.txt"
+    remote = urllib.request.urlopen(url).read().decode().splitlines()
+
+    try:
+        with open(VERSION_FILE) as f:
+            local = f.read().splitlines()
+    except FileNotFoundError:
+        local = []
+
+    if local != remote:
+        print("Updating Max...")
+        os.system("curl -fsSL https://raw.githubusercontent.com/server-luks/maxis/main/setup.sh | bash")
+    else:
+        print("Max is up to date.")
+
+def repl():
+    print("Welcome to Max REPL! Type 'exit' or Ctrl-D to quit.")
+    while True:
+        try:
+            line = input("max> ").strip()
+            if line in ("exit", "quit"):
+                break
+            elif line == "version":
+                print_version()
+            elif line == "update":
+                update()
+            else:
+                # Here you would parse and run Max code
+                print(f"You typed: {line}")
+        except (EOFError, KeyboardInterrupt):
+            print()
+            break
+
+def main():
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--version":
+            print_version()
+            return
+        elif sys.argv[1] == "update":
+            update()
+            return
+        else:
+            # Run a script file (not implemented yet)
+            print(f"Running script {sys.argv[1]} (not implemented)")
+    else:
+        repl()
+
+if __name__ == "__main__":
+    main()
