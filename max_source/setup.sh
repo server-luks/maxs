@@ -1,34 +1,33 @@
 #!/bin/bash
 
-echo "📦 Installing Max Language..."
+set -e
 
-# Directories
 LOCAL_BIN="$HOME/.local/bin"
 LOCAL_LIB="$HOME/.local/lib/max"
+REPO_RAW_BASE="https://raw.githubusercontent.com/server-luks/maxs/main"
 
+echo "Creating directories..."
 mkdir -p "$LOCAL_BIN"
 mkdir -p "$LOCAL_LIB"
 
-# Base URL for raw files on GitHub (adjust if needed)
-BASE_URL="https://raw.githubusercontent.com/server-luks/maxis/main/max_source"
+echo "Downloading max launcher..."
+curl -fsSL "$REPO_RAW_BASE/max_source/max" -o "$LOCAL_BIN/max"
+chmod +x "$LOCAL_BIN/max"
 
-# Download files
-curl -fsSL "$BASE_URL/mox" -o "$LOCAL_BIN/mox" || { echo "Failed to download mox"; exit 1; }
-curl -fsSL "$BASE_URL/core.py" -o "$LOCAL_LIB/core.py" || { echo "Failed to download core.py"; exit 1; }
-curl -fsSL "$BASE_URL/version.txt" -o "$LOCAL_LIB/version.txt" || { echo "Failed to download version.txt"; exit 1; }
+echo "Downloading core.py..."
+curl -fsSL "$REPO_RAW_BASE/lib/core.py" -o "$LOCAL_LIB/core.py"
 
-# Make executable
-chmod +x "$LOCAL_BIN/mox"
+echo "Downloading version.txt..."
+curl -fsSL "$REPO_RAW_BASE/max_source/version.txt" -o "$LOCAL_LIB/version.txt"
 
-# Add to PATH if needed
+# Add ~/.local/bin to PATH if not already present
 SHELL_RC="$HOME/.bashrc"
 [ -n "$ZSH_VERSION" ] && SHELL_RC="$HOME/.zshrc"
 
 if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$SHELL_RC" 2>/dev/null; then
   echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$SHELL_RC"
-  # shellcheck source=/dev/null
-  source "$SHELL_RC"
+  echo "Added ~/.local/bin to PATH in $SHELL_RC. Please restart your shell or run: source $SHELL_RC"
 fi
 
-echo "✅ Max installed successfully! You can run it by typing: mox"
-echo "To update later, run: mox update"
+echo "✅ Max installed successfully!"
+echo "You can now run it by typing: max"
